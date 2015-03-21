@@ -22,7 +22,7 @@ This is going to be pretty vaugue since it's been awhile but...
 * https://code.google.com/p/usu-robosub/ is licensed under Apache 2.0 (mostly, I'm sure there are some exceptions) so I'll probably do some stuff here to make that more apparent: Adding file headers with author info and whatnot.
 * There are a lot of individual custom ROS packages that could all be combined into a single package.
 * There is a lot of obsolete code that could just be deleted.
-* Guillamot Sensor (not released yet) is going to handle the computer vision stuff so that will probably get deleted as well.
+* Guillemot Sensor (not released yet) is going to handle the computer vision stuff so that will probably get deleted as well.
 * A lot of the startup scripts use Bash, which is great and all... but ROS has a more useful startup config so it'd be nice to switch over to that.
 * I'll probably rewrite some simple nodes in Python where it aids in maintainability going forward.
 * The Brain (!) is still very young and needs a lot of help to become smarter.
