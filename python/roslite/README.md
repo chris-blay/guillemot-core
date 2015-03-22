@@ -73,9 +73,9 @@ of a witty name for it.
 Compatibility
 -------------
 
-I'm aiming to use Python 3.4 as much as possible but note that everything works
-perfectly fine in 2.7 as well. And you can even use both in the same graph so
-have at it.
+I'm aiming to use Python 3.2+ as much as possible but note that everything
+works perfectly fine in 2.7 as well. And you can even use both in the same
+graph so have at it.
 
 See Also
 --------
