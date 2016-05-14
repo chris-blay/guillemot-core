@@ -25,14 +25,18 @@ from libs import roslite
 import thermometer
 
 
+NODES = (
+    (nano_bridge.NanoBridge, 'nano_bridge'),
+    (roslite.Registrar, 'registrar'),
+    (thermometer.Thermometer, 'thermometer'),
+)
+
 parser = roslite.create_argument_parser(
     'Guillemot Core runs many different roslite nodes in a single process.')
 parser.add_argument('--persistence_filename', default='/dev/null')
 args = vars(parser.parse_args())
 args['context'] = zmq.Context()
-for node, name in [(nano_bridge.NanoBridge, 'nano_bridge'),
-                   (roslite.Registrar, 'registrar'),
-                   (thermometer.Thermometer, 'thermometer')]:
+for node, name in NODES:
     target = lambda **kwargs: node(**kwargs).run()
     thread = Thread(target=target, name=name, kwargs=args)
     thread.daemon = True
