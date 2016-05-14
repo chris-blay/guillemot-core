@@ -20,7 +20,7 @@ from collections import deque
 from glob import glob
 from time import sleep
 
-import roslite
+from libs import roslite
 from serial import Serial, SerialException
 
 

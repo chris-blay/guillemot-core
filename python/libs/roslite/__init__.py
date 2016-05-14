@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from roslite.atlas import Atlas
-from roslite.client import Client
-from roslite.registrar import Registrar
-from roslite._roslite import create_argument_parser, ExecutionInterrupt, Node
-from roslite.subscriber import Subscriber
+from .atlas import Atlas
+from .client import Client
+from .registrar import Registrar
+from ._roslite import create_argument_parser, ExecutionInterrupt, Node
+from .subscriber import Subscriber

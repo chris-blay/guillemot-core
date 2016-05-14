@@ -22,6 +22,7 @@ import signal
 from threading import current_thread
 
 from msgpack import packb, unpackb
+from six import print_
 import zmq
 
 
@@ -141,9 +142,9 @@ class Base(object):
                 if log_count == Base._log_count:
                     print(' ', end='')
                 else:
-                    print('', flush=False)
+                    print_('', flush=False)
                     print('  ' * Base._log_depth, end='')
-                print('Error!' if exception_occurred else 'Done!',
+                print_('Error!' if exception_occurred else 'Done!',
                       end='', flush=True)
 
     def log_var(self, **kwargs):
@@ -169,8 +170,8 @@ class Base(object):
     def _log_msg(self, msg, level):
         if self._verbose >= level - Base._LEVEL_SHIFT:
             level_label = Base._LEVEL_LABELS[level]
-            print('', flush=False)
-            print('{}{}{}'.format('  ' * Base._log_depth, level_label, msg),
+            print_('', flush=False)
+            print_('{}{}{}'.format('  ' * Base._log_depth, level_label, msg),
                   end='', flush=True)
             Base._log_count += 1
 

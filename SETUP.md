@@ -28,13 +28,23 @@ be fulfilled in a number of ways, but here are my two recommended methods:
 
 The specific dependencies are as follows:
 
-- msgpack 0.4+: Known as `python3-msgpack` and/or `python-msgpack` on
-  Debian-based distros, or `msgpack-python` on PyPi.
-- pyusb 1.0.0b1+: Known as `python3-usb` and/or `python-usb` on Debian-based
-  distros, or `pyusb` on PyPi.
-- zmq ??: Known as `python3-zmq` and/or `python-zmq` on Debian-based distros,
+- msgpack 0.4+:
+  Known as `python3-msgpack` and/or `python-msgpack` on Debian-based distros,
+  or `msgpack-python` on PyPi.
+- pyusb 1.0.0b1+:
+  Known as `python3-usb` and/or `python-usb` on Debian-based distros,
+  or `pyusb` on PyPi.
+- serial 3+:
+  Known `python3-serial` and/or `python-serial` on Debian-based distros,
+  or `pyserial` on PyPi.
+- six 1.10+:
+  Known `python3-six` and/or `python-six` on Debian-based distros,
+  or `six` on PyPi.
+- yaml 3.11+:
+  Known as `python3-yaml` and/or `python-yaml` on Debian-based distros,
+  or `PyYAML` on PyPi.
+- zmq 15+:
+  Known as `python3-zmq` and/or `python-zmq` on Debian-based distros,
   or `pyzmq` on PyPi.
-
-
 
 [1] The ones I'm too lazy to figure out how to publish on PyPi...

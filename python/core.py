@@ -21,7 +21,7 @@ from threading import Thread
 import zmq
 
 import nano_bridge
-import roslite
+from libs import roslite
 import thermometer
 
 

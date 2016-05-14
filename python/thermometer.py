@@ -22,7 +22,7 @@ from re import compile
 from subprocess import check_output
 from time import sleep
 
-import roslite
+from libs import roslite
 
 
 class Thermometer(roslite.Node):

@@ -20,7 +20,7 @@ from time import sleep
 
 from yaml import safe_load
 
-from roslite._roslite import create_argument_parser, Node
+from ._roslite import create_argument_parser, Node
 
 
 class Client(Node):

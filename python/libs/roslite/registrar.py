@@ -20,7 +20,7 @@ import atexit
 
 from yaml import safe_dump, safe_load
 
-from roslite._roslite import C, create_argument_parser, Node
+from ._roslite import C, create_argument_parser, Node
 
 
 class Registrar(Node):

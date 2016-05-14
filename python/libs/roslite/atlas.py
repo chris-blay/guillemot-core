@@ -22,7 +22,7 @@ from os import getpid
 
 import zmq
 
-from roslite._roslite import Base, C, create_argument_parser
+from ._roslite import Base, C, create_argument_parser
 
 
 _Proxy = namedtuple('_Proxy', (
