@@ -20,38 +20,21 @@ from threading import Thread
 
 import zmq
 
+import nano_bridge
 import roslite
-from thermometer import Thermometer
+import thermometer
 
 
-def daemon(thread):
-    thread.daemon = True
-    return thread
-
-
-def registrar(**kwargs):
-    roslite.Registrar(persistence_filename='/dev/null', **kwargs).run()
-
-
-def registrar_subscriber(**kwargs):
-    roslite.Subscriber(channel='registrar', **kwargs).run()
-
-
-def thermometer(**kwargs):
-    Thermometer(**kwargs).run()
-
-
-def thermometer_subscriber(**kwargs):
-    roslite.Subscriber(channel='thermometer',
-                       callback=(lambda self, message:
-                                 self.set_value('temp', message)),
-                       **kwargs).run()
-
-
-args = vars(roslite.create_argument_parser('Guillemot Core.').parse_args())
+parser = roslite.create_argument_parser(
+    'Guillemot Core runs many different roslite nodes in a single process.')
+parser.add_argument('--persistence_filename', default='/dev/null')
+args = vars(parser.parse_args())
 args['context'] = zmq.Context()
-daemon(Thread(target=registrar, kwargs=args)).start()
-daemon(Thread(target=registrar_subscriber, kwargs=args)).start()
-daemon(Thread(target=thermometer, kwargs=args)).start()
-daemon(Thread(target=thermometer_subscriber, kwargs=args)).start()
+for node, name in [(nano_bridge.NanoBridge, 'nano_bridge'),
+                   (roslite.Registrar, 'registrar'),
+                   (thermometer.Thermometer, 'thermometer')]:
+    target = lambda **kwargs: node(**kwargs).run()
+    thread = Thread(target=target, name=name, kwargs=args)
+    thread.daemon = True
+    thread.start()
 roslite.Atlas(**args).run()

@@ -39,7 +39,7 @@ class Client(Node):
     def run(self):
         while self._number:
             self.put_message(self._service, self._request)
-            print(repr(self.get_message(self._service)))
+            self.log_out(repr(self.get_message(self._service)))
             self._number -= 1
             if self._number:
                 sleep(self._wait)

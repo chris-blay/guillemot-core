@@ -29,19 +29,17 @@ class NanoBridge(roslite.Node):
     Handles all communication to/from an Arduino Nano.
     '''
 
-    _ERROR_NANO_NOT_AVAILABLE = ('Unable to open a /dev/ttyUSB. '
-                                 'There are either none or more than one.')
-    _ERROR_PRESSURE_SENSOR_NON_INTEGER = (
+    _WARN_NANO_NOT_AVAILABLE = ('Unable to open a /dev/ttyUSB. '
+                                'There are either none or more than one.')
+    _WARN_PRESSURE_SENSOR_NON_INTEGER = (
         'Presure sensor sent a non-integer value!?')
-    _ERROR_PRESSURE_SENSOR_NOT_POWERED = 'Pressure sensor is not powered!'
-    _ERROR_PRESSURE_SENSOR_NOT_CONNECTED = 'Pressure sensor is not connected!'
+    _WARN_PRESSURE_SENSOR_NOT_POWERED = 'Pressure sensor is not powered!'
+    _WARN_PRESSURE_SENSOR_NOT_CONNECTED = 'Pressure sensor is not connected!'
     _PRESSURE_THRESHOLD = 100
 
     def __init__(self, atlas, interface,
-                 errors_channel='errors',
                  pressure_channel='pressure', **kwargs):
         super(NanoBridge, self).__init__(atlas, interface, **kwargs)
-        self._errors_publisher = self.publish_to_channel(errors_channel)
         self._pressure_publisher = self.publish_to_channel(pressure_channel)
         self._pressure_values = deque(maxlen=10)
 
@@ -53,26 +51,25 @@ class NanoBridge(roslite.Node):
                     try:
                         value = int(tty.readline())
                     except ValueError:
-                        self.put_message(self._errors_publisher,
-                            NanoBridge._ERROR_PRESSURE_SENSOR_NON_INTEGER)
+                        self.log_warn(
+                            NanoBridge._WARN_PRESSURE_SENSOR_NON_INTEGER)
                         sleep(1)
                         continue
                     if value <= 0 or value >= 1023:
-                        self.put_message(self._errors_publisher,
-                            NanoBridge._ERROR_PRESSURE_SENSOR_NOT_POWERED)
+                        self.log_warn(
+                            NanoBridge._WARN_PRESSURE_SENSOR_NOT_POWERED)
                         continue
                     values = self._pressure_values
                     values.append(value)
                     threshold = NanoBridge._PRESSURE_THRESHOLD
                     if max(values) - min(values) > threshold:
-                        self.put_message(self._errors_publisher,
-                            NanoBridge._ERROR_PRESSURE_SENSOR_NOT_CONNECTED)
+                        self.log_warn(
+                            NanoBridge._WARN_PRESSURE_SENSOR_NOT_CONNECTED)
                     else:
                         self.put_message(self._pressure_publisher,
                                          sum(values) / len(values))
             except SerialException:
-                self.put_message(self._errors_publisher,
-                                 NanoBridge._ERROR_NANO_NOT_AVAILABLE)
+                self.log_warn(NanoBridge._WARN_NANO_NOT_AVAILABLE)
                 sleep(1)
 
     def _get_tty(self):
@@ -85,9 +82,6 @@ class NanoBridge(roslite.Node):
 if __name__ == '__main__':
     parser = roslite.create_argument_parser(
         'NanoBridge handles all communication to/from an Arduino Nano.')
-    parser.add_argument('--errors', default='errors',
-                        help='channel on which errors are published. '
-                             'defaults to "errors"')
     parser.add_argument('--pressure', default='pressure',
                         help='channel on which pressure is published. '
                              'defaults to "pressure"')

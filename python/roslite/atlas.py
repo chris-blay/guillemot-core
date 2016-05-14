@@ -56,20 +56,29 @@ class Atlas(Base):
             if self._atlas_provider in sockets:
                 with self.log('Received Atlas request'):
                     message = self.get_message(self._atlas_provider)
-                    if message[C.REQUEST] == C.LOOKUP_CHANNEL:
-                        self.log_msg('lookup_channel {}'.format(
-                            message[C.CHANNEL]))
-                        response = self._build_response(
-                            message, self._get_channel_proxy(message),
-                            C.PUB, C.SUB)
-                    elif (message[C.REQUEST] == C.LOOKUP_SERVICE):
-                        self.log_msg('lookup_service {}'.format(
-                            message[C.SERVICE]))
-                        response = self._build_response(
-                            message, self._get_service_proxy(message),
-                            C.REQ, C.REP)
+                    request = message.get(C.REQUEST)
+                    response = None
+                    if request == C.LOOKUP_CHANNEL:
+                        channel = message.get(C.CHANNEL)
+                        if channel:
+                            self.log_info('lookup_channel {}'.format(channel))
+                            response = self._build_response(
+                                message, self._get_channel_proxy(channel),
+                                C.PUB, C.SUB)
+                        else:
+                            self.log_warn('No channel given to lookup')
+                    elif request == C.LOOKUP_SERVICE:
+                        service = message.get(C.SERVICE)
+                        if service:
+                            self.log_info('lookup_service {}'.format(service))
+                            response = self._build_response(
+                                message, self._get_service_proxy(service),
+                                C.REQ, C.REP)
+                        else:
+                            self.log_warn('No service given to lookup')
                     else:
-                        response = None
+                        self.log_warn('Unknown Atlas request {}'.format(
+                            request))
                 self.put_message(self._atlas_provider, response)
             for proxy in chain(self._channels.values(),
                                self._services.values()):
@@ -79,7 +88,7 @@ class Atlas(Base):
                             proxy.backend.send_multipart(
                                 proxy.frontend.recv_multipart(), zmq.NOBLOCK)
                         except zmq.error.Again:
-                            self.log_msg('Backend not available')
+                            self.log_info('Backend not available')
                 if proxy.backend in sockets:
                     with self.log('Forwarding message(s) to frontend'):
                         proxy.frontend.send_multipart(
@@ -97,16 +106,14 @@ class Atlas(Base):
             return {frontend_type: proxy.frontend_tcp,
                     backend_type: proxy.backend_tcp}
 
-    def _get_channel_proxy(self, message):
-        channel = message[C.CHANNEL]
+    def _get_channel_proxy(self, channel):
         if channel not in self._channels:
             with self.log('Creating proxy for channel "{}"'.format(channel)):
                 self._channels[channel] = self._create_proxy(zmq.XSUB,
                                                              zmq.XPUB)
         return self._channels[channel]
 
-    def _get_service_proxy(self, message):
-        service = message[C.SERVICE]
+    def _get_service_proxy(self, service):
         if service not in self._services:
             with self.log('Creating proxy for service "{}"'.format(service)):
                 self._services[service] = self._create_proxy(zmq.ROUTER,
@@ -121,8 +128,7 @@ class Atlas(Base):
         frontend_tcp = self._bind_to_tcp(frontend)
         self._poller.register(frontend, zmq.POLLIN)
         self.log_var(frontend_inproc=frontend_inproc,
-                     frontend_ipc=frontend_ipc,
-                     frontend_tcp=frontend_tcp)
+                     frontend_ipc=frontend_ipc, frontend_tcp=frontend_tcp)
         backend = self._context.socket(backend_type)
         backend_id = self._get_id()
         backend_inproc = self._bind_to_inproc(backend, backend_id)
@@ -130,8 +136,7 @@ class Atlas(Base):
         backend_tcp = self._bind_to_tcp(backend)
         self._poller.register(backend, zmq.POLLIN)
         self.log_var(backend_inproc=backend_inproc,
-                     backend_ipc=backend_ipc,
-                     backend_tcp=backend_tcp)
+                     backend_ipc=backend_ipc, backend_tcp=backend_tcp)
         return _Proxy(frontend, frontend_inproc, frontend_ipc, frontend_tcp,
                       backend, backend_inproc, backend_ipc, backend_tcp)
 

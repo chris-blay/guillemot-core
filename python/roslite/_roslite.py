@@ -19,7 +19,6 @@ from argparse import Action, ArgumentParser
 from contextlib import contextmanager
 from os import environ, getpid
 import signal
-from sys import stdout
 from threading import current_thread
 
 from msgpack import packb, unpackb
@@ -60,10 +59,8 @@ def create_argument_parser(description):
                         help='interface on which this Node is running. '
                              'should be of the form "<ip-address>". '
                              'defaults to $ROSLITE_INTERFACE')
-    parser.add_argument('-v', '--verbose', action='count',
-                        default=int(bool(environ.get('ROSLITE_VERBOSE'))),
-                        help='enables extra logging to stdout. '
-                             'defaults to $ROSLITE_VERBOSE')
+    parser.add_argument('-v', '--verbose', action='count', default=0,
+                        help='enables extra logging')
     return parser
 
 
@@ -107,6 +104,16 @@ class Base(object):
 
     _log_depth = 0
     _log_count = 0
+    _COLOR_RED = '\033[91m'
+    _COLOR_ORANGE = '\033[93m'
+    _COLOR_BLUE = '\033[94m'
+    _COLOR_NONE = '\033[0m'
+    _LEVEL_LABELS = {
+        -1: '',
+        0: _COLOR_RED + '[E] ' + _COLOR_NONE,
+        1: _COLOR_ORANGE + '[W] ' + _COLOR_NONE,
+        2: _COLOR_BLUE + '[I] ' + _COLOR_NONE}
+    _LEVEL_SHIFT = 1
 
     def __init__(self, verbose=False, **kwargs):
         self._verbose = verbose
@@ -117,38 +124,54 @@ class Base(object):
                 pass
 
     @contextmanager
-    def log(self, msg):
+    def log(self, msg, level=2):
         exception_occurred = False
         try:
-            if self._verbose:
-                self.log_msg('{}…'.format(msg))
+            if self._verbose >= level - Base._LEVEL_SHIFT:
+                self._log_msg('{}…'.format(msg), level=level)
                 Base._log_depth += 1
                 log_count = Base._log_count
-                stdout.flush()
             yield
         except:
             exception_occurred = True
             raise
         finally:
-            if self._verbose:
+            if self._verbose >= level - Base._LEVEL_SHIFT:
                 Base._log_depth -= 1
                 if log_count == Base._log_count:
                     print(' ', end='')
                 else:
-                    print('')
+                    print('', flush=False)
                     print('  ' * Base._log_depth, end='')
-                print('Error!' if exception_occurred else 'Done!')
+                print('Error!' if exception_occurred else 'Done!',
+                      end='', flush=True)
 
     def log_var(self, **kwargs):
-        if self._verbose:
+        level = 2
+        if self._verbose >= level - Base._LEVEL_SHIFT:
             for key, value in kwargs.items():
-                self.log_msg('{}={}'.format(key, repr(value)))
+                self._log_msg('{}={}'.format(key, repr(value)), level=level)
 
-    def log_msg(self, msg):
-        if self._verbose:
-            if Base._log_depth:
-                print('')
-            print('  ' * Base._log_depth + msg, end='')
+    def log_info(self, msg):
+        self._log_msg(msg, level=2)
+
+    def log_warn(self, msg):
+        self._log_msg(msg, level=1)
+
+    def log_err(self, msg):
+        self._log_msg(msg, level=0)
+        print('')
+        raise Exception(msg)
+
+    def log_out(self, msg):
+        self._log_msg(msg, level=-1)
+
+    def _log_msg(self, msg, level):
+        if self._verbose >= level - Base._LEVEL_SHIFT:
+            level_label = Base._LEVEL_LABELS[level]
+            print('', flush=False)
+            print('{}{}{}'.format('  ' * Base._log_depth, level_label, msg),
+                  end='', flush=True)
             Base._log_count += 1
 
     def get_message(self, socket, copy=False,
@@ -158,6 +181,12 @@ class Base(object):
 
     def put_message(self, socket, message):
         socket.send(packb(message))
+
+    def get_packed_message(self, socket, copy=False):
+        return socket.recv(copy=copy, track=True)
+
+    def put_packed_message(self, socket, message):
+        socket.send(message)
 
 
 class Node(Base):
@@ -243,6 +272,5 @@ class Node(Base):
 
     def get_value(self, key, registrar='registrar'):
         service = self.get_service(registrar)
-        self.put_message(service, {C.REQUEST: C.GET,
-                                   C.KEY: key})
+        self.put_message(service, {C.REQUEST: C.GET, C.KEY: key})
         return self.get_message(service)[C.VALUE]

@@ -16,6 +16,7 @@
 # limitations under the License.
 
 from __future__ import print_function, unicode_literals
+
 from distutils.spawn import find_executable
 from re import compile
 from subprocess import check_output
@@ -30,30 +31,36 @@ class Thermometer(roslite.Node):
     Supports using `sensors` (most common) and `vcgencmd` (Raspberry Pi).
     '''
 
+    _SOURCES = (
+        (('vcgencmd', 'measure_temp'), r'^temp=(?P<temp>\d+\.\d+)'),
+        (('sensors',),
+         r'^(Physical id 0|CPU Temperature): +\+(?P<temp>\d+\.\d+)'),
+    )
+
     def __init__(self, atlas, interface, channel='thermometer', **kwargs):
         super(Thermometer, self).__init__(atlas, interface, **kwargs)
         self._thermometer_publisher = self.publish_to_channel(channel)
-        if find_executable('sensors'):
-            self._args = ('sensors',)
-            self._pattern = compile(r'^CPU Temperature: +\+(\d+\.\d+)')
-        elif find_executable('vcgencmd'):
-            self._args = ('vcgencmd', 'measure_temp')
-            self._pattern = compile(r'^temp=(\d+\.\d+)')
-        else:
-            raise Exception(
-                'Neither `sensors` nor `vcgencmd` are on the PATH.')
+        for args, pattern in Thermometer._SOURCES:
+            if find_executable(args[0]):
+                self._args = args
+                self._pattern = compile(pattern)
+                return
+        self.log_err('No configured temperature sources are on the PATH.')
 
     def run(self):
         while True:
-            self.put_message(self._thermometer_publisher,
-                             self._get_temperature())
+            temp = self._get_temperature()
+            if temp is not None:
+                self.put_message(self._thermometer_publisher, temp)
+            else:
+                self.log_warn('Unable to get temperature!')
             sleep(1)
 
     def _get_temperature(self):
         for line in check_output(self._args).decode('utf-8').split('\n'):
             match = self._pattern.match(line)
             if match:
-                return float(match.group(1))
+                return float(match.group('temp'))
 
 
 if __name__ == '__main__':

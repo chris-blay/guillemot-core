@@ -42,20 +42,26 @@ class Registrar(Node):
         try:
             while True:
                 message = self.get_message(self._registrar_provider)
-                try:
-                    if message[C.REQUEST] == C.SET:
-                        key = message[C.KEY]
-                        value = message[C.VALUE]
+                request = message.get(C.REQUEST)
+                response = None
+                if request == C.SET:
+                    key = message.get(C.KEY)
+                    if key:
+                        value = message.get(C.VALUE)
                         self._store[key] = value
                         response = {C.KEY: key, C.VALUE: value}
                         self.put_message(self._registrar_publisher, response)
-                    elif message[C.REQUEST] == C.GET:
-                        key = message[C.KEY]
+                    else:
+                        self.log_warn('Set invalid key {}'.format(key))
+                elif request == C.GET:
+                    key = message.get(C.KEY)
+                    if key:
                         response = {C.KEY: key, C.VALUE: self._store.get(key)}
                     else:
-                        response = None
-                except KeyError:
-                    response = None
+                        self.log_warn('Get invalid key {}'.format(key))
+                else:
+                    self.log_warn('Unknown Registrar request {}'.format(
+                        request))
                 self.put_message(self._registrar_provider, response)
         finally:
             self._save_store()

@@ -28,8 +28,8 @@ class Subscriber(Node):
     def __init__(self, atlas, interface, channel, callback=None, **kwargs):
         super(Subscriber, self).__init__(atlas, interface, **kwargs)
         self._subscriber = self.subscribe_to_channel(channel)
-        self._callback = (callback if callable(callback)
-                          else lambda self, message: print(repr(message)))
+        self._callback = (callback if callable(callback) else
+                          lambda self, message: self.log_out(repr(message)))
 
     def run(self):
         while True:
