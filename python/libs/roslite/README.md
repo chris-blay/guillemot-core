@@ -22,14 +22,21 @@ Requirements
 
 ROSLite depends on a few things that aren't in the standard Python library:
 
-- *MessagePack 0.3+*: `msgpack-python` in pip, `python-msgpack` in apt.
-- *YAML 3.10+*: `PyYAML` in pip or `python-yaml` in apt.
-- *ZeroMQ 14+*: `pyzmq` in pip or `python-zmq` in apt.
+- *MessagePack 0.3+*:
+  `msgpack-python` in PyPi or `python3-msgpack`/`python-msgpack` in apt.
+- *Six 1.10+*:
+  `six` in PyPi or `python3-six`/`python-six` in apt.
+- *YAML 3.10+*:
+  `PyYAML` in pip or `python3-yaml`/`python-yaml` in apt.
+- *ZeroMQ 14+*:
+  `pyzmq` in pip or `python3-zmq`/`python-zmq` in apt.
 
 Installing
 ----------
 
-Just make sure this 'roslite' package is in your Python path.
+Since ROSLite is currently a custom library for just Guillemot Core, it doesn't
+need any extra installation steps. However, if you wish to use ROSLite
+independently, just make sure this 'roslite' package is in your Python path.
 
 Contents
 --------

@@ -1,56 +1,88 @@
 Setting up Guillemot Core
 =========================
- 
+
+All new Guillemot Core code lives in `python`. Other than custom libraries
+(the ones I'm too lazy to figure out how to publish on PyPi) inside
+`python/libs`, everything is specific to Guillemot Core.
+
+Other stuff not in `python` is legacy Gilligan stuff which may get rewritten,
+deleted, etc., and maybe it still works(?) but setting it up is outside the
+scope of this document.
+
 Caveat
 ------
+
 The older Gilligan codebase upon which Gillemot Core is built is heavily
-dependent on ROS [0], and by that I mean *really old* ROS. So it predates all
-the new Catkin build system stuff. And nobody ever really fully understood how
-it built anything. And it's really annoying to deal with.
+dependent on [ROS](http://ros.org/), and by that I mean *really old* ROS. So it
+predates all the new Catkin build system stuff. And nobody ever really fully
+understood how it built anything. It's really annoying to deal with.
 
 But the good news is Guillemot Core is aiming for a full switch over to non-ROS
 Python 3 (also supporting Python 2 so long as it's not too troublesome) which
 should hopefully be more straightforward. But read on to find out...
 
-[0] http://ros.org/
 
-Here Goes
----------
-All new Guillemot Core code lives in `python`. Other than custom libraries
-inside `python/libs` [1], everything is Guillemot-specific code.
+Requirements
+------------
 
-There are also a few required external Python library dependencies, which can
-be fulfilled in a number of ways, but here are my two recommended methods:
+Guillemot Core has all the dependencies of ROSLite,
+as well as a few of its own:
 
-- Assuming the packages are available and up to date, install via Linux
-  distribution package manager.
-- Install from PyPi into a local Python virtualenv environment.
+- *MessagePack 0.3+*:
+  `msgpack-python` in PyPi or `python3-msgpack`/`python-msgpack` in apt.
+- *PyUSB 1.0.0b1+*:
+  `pyusb` in PyPi or `python3-usb`/`python-usb` in apt.
+- *pySerial 3+*:
+  `pyserial` in PyPi or `python3-serial`/`python-serial` in apt.
+- *Six 1.10+*:
+  `six` in PyPi or `python3-six`/`python-six` in apt.
+- *YAML 3.10+*:
+  `PyYAML` in pip or `python3-yaml`/`python-yaml` in apt.
+- *ZeroMQ 14+*:
+  `pyzmq` in pip or `python3-zmq`/`python-zmq` in apt.
 
-The specific dependencies are as follows:
+Configuration
+-------------
 
-- msgpack 0.4+:
-  Known as `python3-msgpack` and/or `python-msgpack` on Debian-based distros,
-  or `msgpack-python` on PyPi.
-- pyusb 1.0.0b1+:
-  Known as `python3-usb` and/or `python-usb` on Debian-based distros,
-  or `pyusb` on PyPi.
-- serial 3+:
-  Known `python3-serial` and/or `python-serial` on Debian-based distros,
-  or `pyserial` on PyPi.
-- six 1.10+:
-  Known `python3-six` and/or `python-six` on Debian-based distros,
-  or `six` on PyPi.
-- yaml 3.11+:
-  Known as `python3-yaml` and/or `python-yaml` on Debian-based distros,
-  or `PyYAML` on PyPi.
-- zmq 15+:
-  Known as `python3-zmq` and/or `python-zmq` on Debian-based distros,
-  or `pyzmq` on PyPi.
+Since the whole idea behind Guillemot Core is "a bunch of ROSLite nodes working
+together" you need to export some environment variables to tell all the separate
+nodes (which may be separate processes or all running in one process, depending
+on how you start them) how to find each other.
 
-[1] The ones I'm too lazy to figure out how to publish on PyPi...
+**ROSLITE_ATLAS** Should be in the form of
+`tcp://[atlas-ipv4-address]:[atlas-port-number]`
 
-Bonus Setup
------------
+Atlas is the ROSLite node which does all the heavy lifting of discovery and
+communication, so all nodes must agree on the same Atlas to see each other, and
+exactly one Atlas node must be started at that address for anything to work.
+
+Consider using the external IP address on the machine running Atlas, so that
+ROSLite nodes running on other machines can still connect to it.
+
+Also, yes, as far as I know only IPv4 works. Not IPv6, not hostnames. I might
+be wrong though, I've just only bothered to use IPv4 so far.
+
+**ROSLITE_INTERFACE** should be in the form of `[your-external-ipv4-address]`
+
+This will match the Atlas IPv4 address on the machine where Atlas is running,
+but will be different on other machines in the network with different external
+IPv4 addresses. Nodes send this in their communications to Atlas, so that Atlas
+can tell if they are running on the same machine, and choose to use a faster
+form of underlying connection, like IPC.
+
+**ROSLITE_VERBOSE** is optional, but if you set it to `1` then ROSLite nodes
+  using the built-in logging will be more chatty. If you set it to `2` they
+  will be the most chatty. It defaults to `0` which is least chatty.
+
+One final note regarding configuration, none of these environment variables
+are really needed at all. All ROSLite nodes support taking `--atlas`,
+`--interface`, and `--verbose` as command line options, so you could always
+directly set these values there. Command line values override environment
+variables.
+
+Optional
+--------
+
 At this point, you should be able to run any of the executable Python scripts
 in the `python` directory. But here are a few suggestions to help you out going
 forward:
