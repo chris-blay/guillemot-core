@@ -46,11 +46,11 @@ Configuration
 
 Since the whole idea behind Guillemot Core is "a bunch of ROSLite nodes working
 together" you need to export some environment variables to tell all the separate
-nodes (which may be separate processes or all running in one process, depending
-on how you start them) how to find each other.
+nodes (which may be separate processes on separate machines or all running in
+one process, depending on how you start them) how to find each other.
 
-**ROSLITE_ATLAS** Should be in the form of
-`tcp://[atlas-ipv4-address]:[atlas-port-number]`
+**ROSLITE_ATLAS** should be in the form of
+`tcp://[atlas-ipv4-address]:[atlas-port-number]`.
 
 Atlas is the ROSLite node which does all the heavy lifting of discovery and
 communication, so all nodes must agree on the same Atlas to see each other, and
@@ -62,7 +62,7 @@ ROSLite nodes running on other machines can still connect to it.
 Also, yes, as far as I know only IPv4 works. Not IPv6, not hostnames. I might
 be wrong though, I've just only bothered to use IPv4 so far.
 
-**ROSLITE_INTERFACE** should be in the form of `[your-external-ipv4-address]`
+**ROSLITE_INTERFACE** should be in the form of `[your-external-ipv4-address]`.
 
 This will match the Atlas IPv4 address on the machine where Atlas is running,
 but will be different on other machines in the network with different external
