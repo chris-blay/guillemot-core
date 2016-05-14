@@ -48,3 +48,17 @@ The specific dependencies are as follows:
   or `pyzmq` on PyPi.
 
 [1] The ones I'm too lazy to figure out how to publish on PyPi...
+
+Bonus Setup
+-----------
+At this point, you should be able to run any of the executable Python scripts
+in the `python` directory. But here are a few suggestions to help you out going
+forward:
+
+- Consider adding the `roslite` library to your environment `PATH` since some
+  of its executable scripts may come in handy.
+- In order for the Thermometer node to work, some kind of sensor executable
+  must be available on your path. Currently only `vcgencmd` (should come
+  installed by default on Raspbian) and `sensors` (for most non-Raspberry Pi
+  cases) are supported. The package name for `sensors` on Debian-based distros
+  is `lm-sensors`.
