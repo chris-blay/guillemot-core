@@ -15,6 +15,10 @@ Guillemot is my new autonomous submarine. It's different from Gilligan, but also
 
 Guillemot Core is a fork of https://code.google.com/p/usu-robosub/, the old Gilligan Core code, which will diverge for use on Guillemot. I expect a lot to change but also want a familiar starting point so here it is.
 
+Setup
+-----
+See `SETUP.md`.
+
 Goals
 -----
 This is going to be pretty vaugue since it's been awhile but...
